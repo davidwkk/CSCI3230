@@ -19,7 +19,7 @@ train_transform = transforms.Compose(
     [
         transforms.Resize((150, 150)),  # Slightly larger for cropping
         # transforms.RandomResizedCrop(150, scale=(0.8, 1.0)),  # Random zoom
-        # transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomHorizontalFlip(p=0.5),  # ✅ Essential for cats/dogs
         transforms.RandomRotation(10),
         # transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
         # transforms.RandomGrayscale(p=0.1),  # Occasionally remove color
