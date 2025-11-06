@@ -114,7 +114,7 @@ train_dataset = CatDogDataset(
     image_paths_train, labels_train, transform=train_transform
 )
 train_loader = DataLoader(
-    train_dataset, batch_size=64, shuffle=True, num_workers=2, pin_memory=True
+    train_dataset, batch_size=64, shuffle=True, num_workers=4, pin_memory=True
 )
 
 # 4. Load the testing dataset with validation
@@ -161,7 +161,7 @@ print(
 # Create testing dataset and dataloader
 test_dataset = CatDogDataset(image_paths_test, labels_test, transform=test_transform)
 test_loader = DataLoader(
-    test_dataset, batch_size=64, shuffle=False, num_workers=2, pin_memory=True
+    test_dataset, batch_size=64, shuffle=False, num_workers=4, pin_memory=True
 )
 
 
