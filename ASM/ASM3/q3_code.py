@@ -275,7 +275,7 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(
 
 num_epochs = 30  # Increased epochs for better training
 train_losses = []
-val_accuracies = []
+test_accuracies = []  # Changed variable name for clarity
 
 print("\nStarting training...\n")
 
@@ -319,50 +319,34 @@ for epoch in range(num_epochs):
 
     print(f"Epoch [{epoch + 1}/{num_epochs}], Average Loss: {epoch_loss:.4f}")
 
-    # [Task 3] Evaluate every 10 epochs
-    if (epoch + 1) % 10 == 0 or epoch == 0:
-        model.eval()
-        correct = 0
-        total = 0
+    # [MODIFIED] Evaluate EVERY epoch
+    model.eval()
+    correct = 0
+    total = 0
 
-        with torch.no_grad():
-            for images, labels in test_loader:
-                # Move data to device
-                images = images.to(device)
-                labels = labels.float().view(-1, 1).to(device)
+    with torch.no_grad():
+        for images, labels in test_loader:
+            # Move data to device
+            images = images.to(device)
+            labels = labels.float().view(-1, 1).to(device)
 
-                # Forward pass
-                outputs = model(images)
+            # Forward pass
+            outputs = model(images)
 
-                # Convert probabilities to binary predictions (threshold = 0.5)
-                predicted = (outputs >= 0.5).float()
+            # Convert probabilities to binary predictions (threshold = 0.5)
+            predicted = (outputs >= 0.5).float()
 
-                # Calculate accuracy
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+            # Calculate accuracy
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
 
-        accuracy = 100 * correct / total
-        val_accuracies.append(accuracy)
-        print(f"Test Accuracy at Epoch {epoch + 1}: {accuracy:.2f}%\n")
+    accuracy = 100 * correct / total
+    test_accuracies.append(accuracy)
+    print(f"Test Accuracy at Epoch {epoch + 1}: {accuracy:.2f}%\n")
 
 # Final evaluation on test set
 print("\nFinal Evaluation on Test Set:")
-model.eval()
-correct = 0
-total = 0
-
-with torch.no_grad():
-    for images, labels in test_loader:
-        images = images.to(device)
-        labels = labels.float().view(-1, 1).to(device)
-
-        outputs = model(images)
-        predicted = (outputs >= 0.5).float()
-
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
-
-final_accuracy = 100 * correct / total
+final_accuracy = test_accuracies[-1]
 print(f"Final Test Accuracy: {final_accuracy:.2f}%")
 
 # 8. [Task 4] Plot training loss and validation accuracy
@@ -383,16 +367,17 @@ plt.savefig("training_loss.png", dpi=300, bbox_inches="tight")
 print("Training loss plot saved as 'training_loss.png'")
 plt.close()
 
-# Plot Validation Accuracy
-eval_epochs = [1] + list(range(10, num_epochs + 1, 10))  # Epochs where we evaluated
+# Plot Test Accuracy (MODIFIED - now plots all epochs)
 plt.figure(figsize=(10, 5))
-plt.plot(eval_epochs, val_accuracies, marker="s", linestyle="-", color="g")
-plt.title("Validation Accuracy over Epochs")
+plt.plot(
+    range(1, num_epochs + 1), test_accuracies, marker="s", linestyle="-", color="g"
+)
+plt.title("Test Accuracy over Epochs")
 plt.xlabel("Epoch")
 plt.ylabel("Accuracy (%)")
 plt.grid(True)
-plt.savefig("validation_accuracy.png", dpi=300, bbox_inches="tight")
-print("Validation accuracy plot saved as 'validation_accuracy.png'")
+plt.savefig("test_accuracy.png", dpi=300, bbox_inches="tight")
+print("Test accuracy plot saved as 'test_accuracy.png'")
 plt.close()
 
 
@@ -401,8 +386,7 @@ torch.save(
     {
         "model_state_dict": model.state_dict(),
         "train_losses": train_losses,
-        "val_accuracies": val_accuracies,
-        "eval_epochs": [1] + list(range(10, num_epochs + 1, 10)),
+        "test_accuracies": test_accuracies,
     },
     "cat_dog_classifier_with_history.pth",
 )
@@ -410,5 +394,5 @@ torch.save(
 print("Model and training history saved!")
 
 print("\n" + "=" * 50)
-print(f"FINAL TEST ACCURACY: {val_accuracies[-1]:.2f}%")
+print(f"FINAL TEST ACCURACY: {test_accuracies[-1]:.2f}%")
 print("=" * 50)
