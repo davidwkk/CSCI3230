@@ -17,12 +17,12 @@ print(f"Using device: {device}")
 # 1. Define the transformations with data augmentation for training
 train_transform = transforms.Compose(
     [
-        transforms.Resize((160, 160)),  # Slightly larger for cropping
-        transforms.RandomResizedCrop(150, scale=(0.8, 1.0)),  # Random zoom
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandomRotation(15),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-        transforms.RandomGrayscale(p=0.1),  # Occasionally remove color
+        transforms.Resize((150, 150)),  # Slightly larger for cropping
+        # transforms.RandomResizedCrop(150, scale=(0.8, 1.0)),  # Random zoom
+        # transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomRotation(10),
+        # transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+        # transforms.RandomGrayscale(p=0.1),  # Occasionally remove color
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ]
@@ -114,7 +114,7 @@ train_dataset = CatDogDataset(
     image_paths_train, labels_train, transform=train_transform
 )
 train_loader = DataLoader(
-    train_dataset, batch_size=64, shuffle=True, num_workers=4, pin_memory=True
+    train_dataset, batch_size=32, shuffle=True, num_workers=4, pin_memory=True
 )
 
 # 4. Load the testing dataset with validation
@@ -161,7 +161,7 @@ print(
 # Create testing dataset and dataloader
 test_dataset = CatDogDataset(image_paths_test, labels_test, transform=test_transform)
 test_loader = DataLoader(
-    test_dataset, batch_size=64, shuffle=False, num_workers=4, pin_memory=True
+    test_dataset, batch_size=32, shuffle=False, num_workers=4, pin_memory=True
 )
 
 
@@ -267,16 +267,11 @@ print(f"\nModel Architecture:\n{model}")
 print(f"\nTotal parameters: {sum(p.numel() for p in model.parameters()):,}")
 
 criterion = nn.BCELoss()  # Binary Cross Entropy Loss
-optimizer = optim.SGD(
-    model.parameters(),
-    lr=0.002,  # Scaled for bs=64
-    momentum=0.9,
-    weight_decay=1e-4,
-    nesterov=True,  # Nesterov momentum (slight improvement)
-)
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
+
 # Learning rate scheduler for better convergence
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-    optimizer, mode="min", factor=0.5, patience=5
+    optimizer, mode="min", factor=0.5, patience=3
 )
 
 # 7. [Task 2] Train the model and store loss and accuracy values
@@ -371,8 +366,8 @@ plt.title("Training Loss over Epochs")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.grid(True)
-plt.savefig("training_loss_augmented_bs64.png", dpi=300, bbox_inches="tight")
-print("Training loss plot saved as 'training_loss_augmented_bs64.png'")
+plt.savefig("training_loss_less_augmented.png", dpi=300, bbox_inches="tight")
+print("Training loss plot saved as 'training_loss_less_augmented.png'")
 plt.close()
 
 # Plot Test Accuracy (MODIFIED - now plots all epochs)
@@ -384,8 +379,8 @@ plt.title("Test Accuracy over Epochs")
 plt.xlabel("Epoch")
 plt.ylabel("Accuracy (%)")
 plt.grid(True)
-plt.savefig("test_accuracy_augmented_bs64.png", dpi=300, bbox_inches="tight")
-print("Test accuracy plot saved as 'test_accuracy_augmented_bs64.png'")
+plt.savefig("test_accuracy_less_augmented.png", dpi=300, bbox_inches="tight")
+print("Test accuracy plot saved as 'test_accuracy_less_augmented.png'")
 plt.close()
 
 
@@ -396,7 +391,7 @@ torch.save(
         "train_losses": train_losses,
         "test_accuracies": test_accuracies,
     },
-    "cat_dog_classifier_augmented_bs64_with_history.pth",
+    "cat_dog_classifier_less_augmented_with_history.pth",
 )
 
 print("Model and training history saved!")
