@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -17,9 +17,11 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+from typing import List
+
 import util
 from game import Directions
-from typing import List
+
 
 class SearchProblem:
     """
@@ -64,8 +66,6 @@ class SearchProblem:
         util.raiseNotDefined()
 
 
-
-
 def tinyMazeSearch(problem: SearchProblem) -> List[Directions]:
     """
     Returns a sequence of moves that solves tinyMaze.  For any other maze, the
@@ -73,7 +73,8 @@ def tinyMazeSearch(problem: SearchProblem) -> List[Directions]:
     """
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """
@@ -89,18 +90,155 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # ITERATIVE VERSION (UNCOMMENT TO USE)
+    # Initialize the fringe (stack) with the start state
+    # Each element in the stack is a tuple: (state, list_of_actions)
+    fringe = util.Stack()
+    fringe.push((problem.getStartState(), []))
+
+    # Keep track of visited states to avoid cycles
+    visited = set()
+
+    while not fringe.isEmpty():
+        # Pop the deepest node from the stack
+        current_state, actions = fringe.pop()
+
+        # Skip if already visited
+        if current_state in visited:
+            continue
+
+        # Mark current state as visited
+        visited.add(current_state)
+
+        # Check if we reached the goal
+        if problem.isGoalState(current_state):
+            return actions
+
+        # Expand the current node and push successors onto the stack
+        # Push in the order provided by getSuccessors (important for correct path length)
+        for successor, action, stepCost in problem.getSuccessors(current_state):
+            if successor not in visited:
+                # Create new action list by appending current action
+                new_actions = actions + [action]
+                fringe.push((successor, new_actions))
+
+    # If no solution found, return empty list
+    return []
+
+    # RECURSIVE VERSION (COMMENTED OUT - UNCOMMENT TO USE)
+    """
+    def dfs_recursive(state, visited, actions):
+        # Mark current state as visited
+        visited.add(state)
+
+        # Check if we reached the goal
+        if problem.isGoalState(state):
+            return actions
+
+        # Explore successors
+        for successor, action, stepCost in problem.getSuccessors(state):
+            if successor not in visited:
+                # Recursively search from successor
+                result = dfs_recursive(successor, visited, actions + [action])
+                if result is not None:
+                    return result
+
+        # No solution found from this path
+        return None
+
+    # Initialize visited set and start recursive search
+    visited = set()
+    result = dfs_recursive(problem.getStartState(), visited, [])
+
+    # Return result or empty list if no solution
+    return result if result is not None else []
+    """
+
 
 def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # Initialize the fringe (queue) with the start state
+    # Each element in the queue is a tuple: (state, list_of_actions)
+    fringe = util.Queue()
+    fringe.push((problem.getStartState(), []))
+
+    # Keep track of visited states to avoid cycles
+    visited = set()
+
+    while not fringe.isEmpty():
+        # Dequeue the shallowest node from the queue
+        current_state, actions = fringe.pop()
+
+        # Skip if already visited
+        if current_state in visited:
+            continue
+
+        # Mark current state as visited
+        visited.add(current_state)
+
+        # Check if we reached the goal
+        if problem.isGoalState(current_state):
+            return actions
+
+        # Expand the current node and enqueue successors
+        for successor, action, stepCost in problem.getSuccessors(current_state):
+            if successor not in visited:
+                # Create new action list by appending current action
+                new_actions = actions + [action]
+                fringe.push((successor, new_actions))
+
+    # If no solution found, return empty list
+    return []
+
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
+
+
+# def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
+#     """Search the node of least total cost first."""
+
+#     # Initialize the fringe (priority queue) with the start state
+#     # Each element is a tuple: (state, list_of_actions, total_cost)
+#     # Priority queue orders by total_cost
+#     fringe = util.PriorityQueue()
+#     fringe.push((problem.getStartState(), [], 0), 0)
+
+#     # Keep track of visited states to avoid cycles
+#     visited = set()
+
+#     while not fringe.isEmpty():
+#         # Pop the node with the lowest total cost
+#         current_state, actions, current_cost = fringe.pop()
+
+#         # Skip if already visited
+#         if current_state in visited:
+#             continue
+
+#         # Mark current state as visited
+#         visited.add(current_state)
+
+#         # Check if we reached the goal
+#         if problem.isGoalState(current_state):
+#             return actions
+
+#         # Expand the current node and add successors to priority queue
+#         for successor, action, stepCost in problem.getSuccessors(current_state):
+#             if successor not in visited:
+#                 # Calculate new total cost
+#                 new_cost = current_cost + stepCost
+#                 # Create new action list by appending current action
+#                 new_actions = actions + [action]
+#                 # Push with priority equal to total cost
+#                 fringe.push((successor, new_actions, new_cost), new_cost)
+
+#     # If no solution found, return empty list
+#     return []
+
 
 def nullHeuristic(state, problem=None) -> float:
     """
@@ -109,10 +247,58 @@ def nullHeuristic(state, problem=None) -> float:
     """
     return 0
 
+
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
+
+
+# def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
+#     """Search the node that has the lowest combined cost and heuristic first."""
+
+#     # Initialize the fringe (priority queue) with the start state
+#     # Each element is a tuple: (state, list_of_actions, total_cost)
+#     # Priority queue orders by f(n) = g(n) + h(n)
+#     fringe = util.PriorityQueue()
+#     start_state = problem.getStartState()
+#     fringe.push((start_state, [], 0), 0 + heuristic(start_state, problem))
+
+#     # Keep track of visited states to avoid cycles
+#     visited = set()
+
+#     while not fringe.isEmpty():
+#         # Pop the node with the lowest f(n) = g(n) + h(n)
+#         current_state, actions, current_cost = fringe.pop()
+
+#         # Skip if already visited
+#         if current_state in visited:
+#             continue
+
+#         # Mark current state as visited
+#         visited.add(current_state)
+
+#         # Check if we reached the goal
+#         if problem.isGoalState(current_state):
+#             return actions
+
+#         # Expand the current node and add successors to priority queue
+#         for successor, action, stepCost in problem.getSuccessors(current_state):
+#             if successor not in visited:
+#                 # Calculate new total cost g(n)
+#                 new_cost = current_cost + stepCost
+#                 # Create new action list by appending current action
+#                 new_actions = actions + [action]
+#                 # Calculate f(n) = g(n) + h(n)
+#                 # g(n) = new_cost (actual cost from start to successor)
+#                 # h(n) = heuristic(successor, problem) (estimated cost from successor to goal)
+#                 priority = new_cost + heuristic(successor, problem)
+#                 # Push with priority equal to f(n)
+#                 fringe.push((successor, new_actions, new_cost), priority)
+
+#     # If no solution found, return empty list
+#     return []
+
 
 # Abbreviations
 bfs = breadthFirstSearch
